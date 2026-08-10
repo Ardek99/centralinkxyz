@@ -5,6 +5,7 @@ namespace App\Controller\Admin;
 use App\Entity\Request;
 use App\Enum\CryptoType;
 use App\Enum\RequestType;
+use App\Service\FundsCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Action;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Actions;
@@ -27,7 +28,8 @@ class RequestCrudController extends AbstractCrudController
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private AdminUrlGenerator $adminUrlGenerator
+        private AdminUrlGenerator $adminUrlGenerator,
+        private FundsCalculator $fundsCalculator
     ) {}
 
     public static function getEntityFqcn(): string
@@ -120,10 +122,34 @@ class RequestCrudController extends AbstractCrudController
     {
         /** @var Request $request */
         $request = $context->getEntity()->getInstance();
-        
+
+        // Un retrait ne doit jamais être validé s'il dépasse les fonds
+        // réellement disponibles de l'utilisateur à cet instant (d'autres
+        // demandes ont pu être validées entre-temps).
+        if ($request->getType() === RequestType::WITHDRAWAL) {
+            $availableFunds = $this->fundsCalculator->getAvailableFunds($request->getUser());
+            $requestedAmount = (float) $request->getAmount();
+
+            if ($requestedAmount > $availableFunds) {
+                $this->addFlash('error', sprintf(
+                    'Impossible de valider : %s ne dispose que de $%s disponibles pour un retrait de $%s.',
+                    $request->getUser()?->getFullName(),
+                    number_format($availableFunds, 2),
+                    number_format($requestedAmount, 2)
+                ));
+
+                return $this->redirect(
+                    $this->adminUrlGenerator
+                        ->setController(self::class)
+                        ->setAction(Action::INDEX)
+                        ->generateUrl()
+                );
+            }
+        }
+
         $request->setIsValidated(true);
         $this->entityManager->flush();
-        
+
         $this->addFlash('success', sprintf(
             'Demande #%d validée avec succès !',
             $request->getId()
