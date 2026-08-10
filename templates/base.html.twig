@@ -166,11 +166,51 @@
                 font-size: 1.25rem;
             }
 
+            .nav-menu {
+                display: flex;
+                align-items: center;
+                gap: 2rem;
+            }
+
             .nav-links {
                 display: flex;
                 align-items: center;
                 gap: 2rem;
                 list-style: none;
+            }
+
+            .nav-burger {
+                display: none;
+                flex-direction: column;
+                justify-content: center;
+                gap: 5px;
+                width: 40px;
+                height: 40px;
+                background: transparent;
+                border: none;
+                cursor: pointer;
+                padding: 0;
+            }
+
+            .nav-burger span {
+                display: block;
+                width: 24px;
+                height: 2px;
+                background: var(--color-text);
+                border-radius: 2px;
+                transition: transform var(--transition), opacity var(--transition);
+            }
+
+            .nav-burger[aria-expanded="true"] span:nth-child(1) {
+                transform: translateY(7px) rotate(45deg);
+            }
+
+            .nav-burger[aria-expanded="true"] span:nth-child(2) {
+                opacity: 0;
+            }
+
+            .nav-burger[aria-expanded="true"] span:nth-child(3) {
+                transform: translateY(-7px) rotate(-45deg);
             }
 
             .nav-links a {
@@ -330,6 +370,68 @@
                 color: var(--color-text-muted);
                 font-size: 0.875rem;
             }
+
+            /* Responsive nav (mobile) */
+            @media (max-width: 768px) {
+                .top-banner {
+                    display: none;
+                }
+
+                .navbar {
+                    top: 0;
+                }
+
+                main {
+                    padding-top: 88px;
+                }
+
+                .flash-messages {
+                    top: 96px;
+                }
+
+                .nav-burger {
+                    display: flex;
+                }
+
+                .nav-menu {
+                    display: none;
+                    position: fixed;
+                    top: 72px;
+                    left: 0;
+                    right: 0;
+                    flex-direction: column;
+                    align-items: stretch;
+                    gap: 1rem;
+                    background: var(--color-bg-secondary);
+                    border-bottom: 1px solid var(--color-border);
+                    padding: 1.5rem;
+                    max-height: calc(100vh - 72px);
+                    overflow-y: auto;
+                    z-index: 100;
+                }
+
+                .nav-menu.open {
+                    display: flex;
+                }
+
+                .nav-links {
+                    flex-direction: column;
+                    align-items: flex-start;
+                    gap: 1rem;
+                    width: 100%;
+                }
+
+                .nav-auth {
+                    flex-direction: column;
+                    align-items: stretch;
+                    width: 100%;
+                    gap: 0.75rem;
+                }
+
+                .nav-auth .btn {
+                    width: 100%;
+                }
+            }
         </style>
 
         {% block stylesheets %}{% endblock %}
@@ -355,36 +457,74 @@
                 <a href="{% if app.user %}{% if is_granted('ROLE_ADMIN') %}{{ path('app_transaction_index') }}{% else %}{{ path('app_home') }}{% endif %}{% else %}{{ path('app_login') }}{% endif %}" class="logo">
                     <img src="{{ asset('images/logo.svg') }}" alt="Centralink" style="height: 37px; width: auto;">
                 </a>
-                <ul class="nav-links">
-                    {% block nav_items %}
+
+                <button type="button" class="nav-burger" id="navBurger" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navMenu">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+
+                <div class="nav-menu" id="navMenu">
+                    <ul class="nav-links">
+                        {% block nav_items %}
+                            {% if app.user %}
+                                {% if is_granted('ROLE_ADMIN') %}
+                                    <li><a href="{{ path('app_transaction_index') }}">Transactions</a></li>
+                                {% else %}
+                                    <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                                    <li><a href="{{ path('app_request_index') }}">Mes Demandes</a></li>
+                                    <li><a href="{{ path('app_api_keys') }}">API</a></li>
+                                {% endif %}
+                            {% endif %}
+                        {% endblock %}
+                    </ul>
+                    <div class="nav-auth">
                         {% if app.user %}
                             {% if is_granted('ROLE_ADMIN') %}
-                                <li><a href="{{ path('app_transaction_index') }}">Transactions</a></li>
-                            {% else %}
-                                <li><a href="{{ path('app_home') }}">Accueil</a></li>
-                                <li><a href="{{ path('app_request_index') }}">Mes Demandes</a></li>
-                                <li><a href="{{ path('app_api_keys') }}">API</a></li>
+                                <a href="{{ path('admin') }}" class="btn btn-secondary btn-sm">
+                                    Admin
+                                    {{ render(controller('App\\Controller\\RequestController::pendingBadge')) }}
+                                </a>
                             {% endif %}
+                            <span class="user-greeting">{{ app.user.firstName }}</span>
+                            <a href="{{ path('app_logout') }}" class="btn btn-secondary btn-sm">Déconnexion</a>
+                        {% else %}
+                            <a href="{{ path('app_login') }}" class="btn btn-secondary btn-sm">Connexion</a>
+                            <a href="{{ path('app_register') }}" class="btn btn-primary btn-sm">Inscription</a>
                         {% endif %}
-                    {% endblock %}
-                </ul>
-                <div class="nav-auth">
-                    {% if app.user %}
-                        {% if is_granted('ROLE_ADMIN') %}
-                            <a href="{{ path('admin') }}" class="btn btn-secondary btn-sm">
-                                Admin
-                                {{ render(controller('App\\Controller\\RequestController::pendingBadge')) }}
-                            </a>
-                        {% endif %}
-                        <span class="user-greeting">{{ app.user.firstName }}</span>
-                        <a href="{{ path('app_logout') }}" class="btn btn-secondary btn-sm">Déconnexion</a>
-                    {% else %}
-                        <a href="{{ path('app_login') }}" class="btn btn-secondary btn-sm">Connexion</a>
-                        <a href="{{ path('app_register') }}" class="btn btn-primary btn-sm">Inscription</a>
-                    {% endif %}
+                    </div>
                 </div>
             </div>
         </nav>
+
+        <script>
+        (function() {
+            const burger = document.getElementById('navBurger');
+            const menu = document.getElementById('navMenu');
+            if (!burger || !menu) {
+                return;
+            }
+
+            burger.addEventListener('click', function() {
+                const isOpen = menu.classList.toggle('open');
+                burger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+            });
+
+            menu.querySelectorAll('a').forEach(function(link) {
+                link.addEventListener('click', function() {
+                    menu.classList.remove('open');
+                    burger.setAttribute('aria-expanded', 'false');
+                });
+            });
+
+            window.addEventListener('resize', function() {
+                if (window.innerWidth > 768) {
+                    menu.classList.remove('open');
+                    burger.setAttribute('aria-expanded', 'false');
+                }
+            });
+        })();
+        </script>
 
         {# Flash Messages #}
         {% if app.flashes is not empty %}
