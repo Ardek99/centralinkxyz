@@ -47,6 +47,50 @@
     .back-link:hover {
         color: var(--color-text);
     }
+
+    .confirm-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+    }
+
+    .confirm-overlay.show {
+        display: flex;
+    }
+
+    .confirm-modal {
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .confirm-modal h2 {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .confirm-modal p {
+        color: var(--color-text-muted);
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .confirm-modal strong {
+        color: var(--color-text);
+    }
+
+    .confirm-actions {
+        display: flex;
+        gap: 1rem;
+    }
 </style>
 {% endblock %}
 
@@ -76,6 +120,77 @@
         {{ form_end(form) }}
     </div>
 </div>
+
+<div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-modal">
+        <h2>Confirmer la demande</h2>
+        <p id="confirmMessage"></p>
+        <div class="confirm-actions">
+            <button type="button" class="btn btn-primary" id="confirmSubmit">✅ Confirmer</button>
+            <button type="button" class="btn btn-secondary" id="confirmCancel">Annuler</button>
+        </div>
+    </div>
+</div>
+
+<script>
+(function() {
+    function initConfirmModal() {
+        const form = document.querySelector('form[name="request_form"]');
+        const overlay = document.getElementById('confirmOverlay');
+        const message = document.getElementById('confirmMessage');
+        const confirmBtn = document.getElementById('confirmSubmit');
+        const cancelBtn = document.getElementById('confirmCancel');
+
+        if (!form || !overlay) {
+            setTimeout(initConfirmModal, 100);
+            return;
+        }
+
+        let confirmed = false;
+
+        function selectedText(select) {
+            return select && select.selectedOptions.length ? select.selectedOptions[0].text.trim() : '';
+        }
+
+        form.addEventListener('submit', function(event) {
+            if (confirmed) {
+                return;
+            }
+            event.preventDefault();
+
+            const type = selectedText(form.querySelector('select[name="request_form[type]"]'));
+            const crypto = selectedText(form.querySelector('select[name="request_form[cryptoType]"]'));
+            const amount = form.querySelector('input[name="request_form[amount]"]');
+            const amountValue = amount ? amount.value : '';
+
+            message.innerHTML = `Vous êtes sur le point de créer une demande de <strong>${type || '…'}</strong> de <strong>${amountValue || '…'} ${crypto || ''}</strong>. Cette action ne pourra pas être annulée une fois validée par un administrateur.`;
+            overlay.classList.add('show');
+        });
+
+        cancelBtn.addEventListener('click', function() {
+            overlay.classList.remove('show');
+        });
+
+        confirmBtn.addEventListener('click', function() {
+            confirmed = true;
+            overlay.classList.remove('show');
+            form.requestSubmit();
+        });
+
+        overlay.addEventListener('click', function(event) {
+            if (event.target === overlay) {
+                overlay.classList.remove('show');
+            }
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initConfirmModal);
+    } else {
+        initConfirmModal();
+    }
+})();
+</script>
 {% endblock %}
 
 

@@ -269,6 +269,86 @@
             height: 300px;
         }
     }
+
+    .danger-zone {
+        background: var(--color-bg-secondary);
+        border: 1px solid #ef4444;
+        border-radius: var(--radius-lg);
+        padding: 1.5rem;
+    }
+
+    .danger-zone h3 {
+        font-size: 1.1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .danger-zone p {
+        color: var(--color-text-muted);
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+
+    .danger-zone .btn-danger {
+        background: #ef4444;
+        color: white;
+        border: none;
+    }
+
+    .danger-zone .btn-danger:hover {
+        background: #dc2626;
+    }
+
+    .confirm-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 1rem;
+    }
+
+    .confirm-overlay.show {
+        display: flex;
+    }
+
+    .confirm-modal {
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 2rem;
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .confirm-modal h2 {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .confirm-modal p {
+        color: var(--color-text-muted);
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+    }
+
+    .confirm-modal .form-input {
+        width: 100%;
+        padding: 0.875rem 1rem;
+        background: var(--color-bg);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        color: var(--color-text);
+        font-family: var(--font-sans);
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .confirm-actions {
+        display: flex;
+        gap: 1rem;
+    }
 </style>
 {% endblock %}
 
@@ -446,6 +526,58 @@
         </div>
     </div>
 </div>
+
+<div class="content-wrapper" style="padding-top: 0;">
+    <div class="container">
+        <div class="danger-zone">
+            <h3>⚠️ Zone dangereuse</h3>
+            <p>
+                La suppression de votre compte efface définitivement votre profil, vos transactions
+                et vos demandes. Cette action est irréversible. Voir notre
+                <a href="{{ path('app_privacy_policy') }}">politique de confidentialité</a>.
+            </p>
+            <button type="button" class="btn btn-danger" id="openDeleteAccount">Supprimer mon compte</button>
+        </div>
+    </div>
+</div>
+
+<div class="confirm-overlay" id="deleteAccountOverlay">
+    <div class="confirm-modal">
+        <h2>Supprimer définitivement votre compte ?</h2>
+        <p>
+            Toutes vos données (transactions, demandes, informations de compte) seront effacées
+            immédiatement et de façon irréversible. Saisissez votre mot de passe pour confirmer.
+        </p>
+        <form method="post" action="{{ path('app_account_delete') }}" id="deleteAccountForm">
+            <input type="hidden" name="_token" value="{{ csrf_token('delete-account') }}">
+            <input type="password" name="password" class="form-input" placeholder="Votre mot de passe" required autocomplete="current-password">
+            <div class="confirm-actions">
+                <button type="submit" class="btn btn-danger">Supprimer définitivement</button>
+                <button type="button" class="btn btn-secondary" id="cancelDeleteAccount">Annuler</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+(function() {
+    const openBtn = document.getElementById('openDeleteAccount');
+    const cancelBtn = document.getElementById('cancelDeleteAccount');
+    const overlay = document.getElementById('deleteAccountOverlay');
+
+    if (!openBtn || !overlay) {
+        return;
+    }
+
+    openBtn.addEventListener('click', () => overlay.classList.add('show'));
+    cancelBtn.addEventListener('click', () => overlay.classList.remove('show'));
+    overlay.addEventListener('click', (event) => {
+        if (event.target === overlay) {
+            overlay.classList.remove('show');
+        }
+    });
+})();
+</script>
 
 {% if pnlChartData|length > 0 %}
 <script>
