@@ -6,8 +6,10 @@ use App\Entity\Request;
 use App\Entity\User;
 use App\Form\RequestFormType;
 use App\Repository\RequestRepository;
+use App\Service\FundsCalculator;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request as HttpRequest;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -48,7 +50,7 @@ final class RequestController extends AbstractController
     }
 
     #[Route('/new', name: 'app_request_new', methods: ['GET', 'POST'])]
-    public function new(HttpRequest $httpRequest, EntityManagerInterface $entityManager): Response
+    public function new(HttpRequest $httpRequest, EntityManagerInterface $entityManager, FundsCalculator $fundsCalculator): Response
     {
         $request = new Request();
 
@@ -56,6 +58,9 @@ final class RequestController extends AbstractController
         $form->handleRequest($httpRequest);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            /** @var User $user */
+            $user = $this->getUser();
+
             // Validation : publicAddress requis pour les retraits
             if ($request->getType() === \App\Enum\RequestType::WITHDRAWAL && empty($request->getPublicAddress())) {
                 $this->addFlash('error', 'L\'adresse publique est requise pour un retrait.');
@@ -64,9 +69,26 @@ final class RequestController extends AbstractController
                     'form' => $form,
                 ]);
             }
-            
-            /** @var User $user */
-            $user = $this->getUser();
+
+            // Validation : impossible de retirer plus que les fonds disponibles
+            if ($request->getType() === \App\Enum\RequestType::WITHDRAWAL) {
+                $availableFunds = $fundsCalculator->getAvailableFunds($user);
+                $requestedAmount = (float) $request->getAmount();
+
+                if ($requestedAmount > $availableFunds) {
+                    $form->get('amount')->addError(new FormError(sprintf(
+                        'Fonds insuffisants : vous disposez de $%s disponibles, vous demandez un retrait de $%s.',
+                        number_format($availableFunds, 2),
+                        number_format($requestedAmount, 2)
+                    )));
+
+                    return $this->render('request/new.html.twig', [
+                        'request' => $request,
+                        'form' => $form,
+                    ]);
+                }
+            }
+
             $request->setUser($user);
             // La demande n'est PAS validée par défaut
             $request->setIsValidated(false);
