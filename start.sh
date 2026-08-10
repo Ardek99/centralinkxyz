@@ -50,7 +50,7 @@ fi
 
 # Exécuter les migrations de base de données (toujours nécessaire pour les nouvelles migrations)
 echo "Running database migrations..."
-php bin/console doctrine:migrations:migrate --no-interaction || echo "⚠️  WARNING: Migrations failed, continuing anyway..."
+php bin/console doctrine:migrations:migrate --no-interaction --env=prod --no-debug || echo "⚠️  WARNING: Migrations failed, continuing anyway..."
 
 # Vider le cache pour s'assurer que Symfony reconnaît les nouveaux assets
 echo "Clearing cache..."
