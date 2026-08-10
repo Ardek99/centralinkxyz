@@ -29,6 +29,12 @@ security:
                 # where to redirect after logout
                 # target: app_any_route
 
+            # Protection contre le brute-force : 5 tentatives échouées max,
+            # puis blocage temporaire (par identifiant + par IP) pendant 15 min.
+            login_throttling:
+                max_attempts: 5
+                interval: '15 minutes'
+
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
 

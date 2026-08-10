@@ -200,6 +200,21 @@
                 font-size: 0.85rem;
             }
 
+            .badge-pending {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 18px;
+                height: 18px;
+                padding: 0 5px;
+                margin-left: 0.4rem;
+                background: #ef4444;
+                color: white;
+                font-size: 0.7rem;
+                font-weight: 700;
+                border-radius: 999px;
+            }
+
             /* Buttons */
             .btn {
                 display: inline-flex;
@@ -343,14 +358,11 @@
                 <ul class="nav-links">
                     {% block nav_items %}
                         {% if app.user %}
-                            {% if not is_granted('ROLE_ADMIN') %}
-                                <li><a href="{{ path('app_home') }}">Accueil</a></li>
-                            {% endif %}
-                            <li><a href="{{ path('app_request_index') }}">Mes Demandes</a></li>
                             {% if is_granted('ROLE_ADMIN') %}
                                 <li><a href="{{ path('app_transaction_index') }}">Transactions</a></li>
-                            {% endif %}
-                            {% if not is_granted('ROLE_ADMIN') %}
+                            {% else %}
+                                <li><a href="{{ path('app_home') }}">Accueil</a></li>
+                                <li><a href="{{ path('app_request_index') }}">Mes Demandes</a></li>
                                 <li><a href="{{ path('app_api_keys') }}">API</a></li>
                             {% endif %}
                         {% endif %}
@@ -359,7 +371,10 @@
                 <div class="nav-auth">
                     {% if app.user %}
                         {% if is_granted('ROLE_ADMIN') %}
-                            <a href="{{ path('admin') }}" class="btn btn-secondary btn-sm">Admin</a>
+                            <a href="{{ path('admin') }}" class="btn btn-secondary btn-sm">
+                                Admin
+                                {{ render(controller('App\\Controller\\RequestController::pendingBadge')) }}
+                            </a>
                         {% endif %}
                         <span class="user-greeting">{{ app.user.firstName }}</span>
                         <a href="{{ path('app_logout') }}" class="btn btn-secondary btn-sm">Déconnexion</a>
@@ -392,7 +407,7 @@
         {# Footer #}
         <footer class="footer">
             <div class="container">
-                <p>© {{ "now"|date("Y") }} Centralink </p>
+                <p>© {{ "now"|date("Y") }} Centralink — <a href="{{ path('app_privacy_policy') }}">Politique de confidentialité</a></p>
             </div>
         </footer>
     </body>

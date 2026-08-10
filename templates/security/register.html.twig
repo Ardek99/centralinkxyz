@@ -183,6 +183,11 @@
                 {{ form_widget(registrationForm.plainPassword.second) }}
             </div>
 
+            <p class="password-hint">
+                En créant un compte, vous acceptez notre
+                <a href="{{ path('app_privacy_policy') }}">politique de confidentialité</a>.
+            </p>
+
             <div class="auth-actions">
                 <button class="btn btn-primary" type="submit">
                     Créer mon compte →

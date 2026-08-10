@@ -6,7 +6,6 @@ use App\Entity\Request;
 use App\Entity\Transaction;
 use App\Entity\User;
 use App\Repository\RequestRepository;
-use App\Repository\TransactionRepository;
 use EasyCorp\Bundle\EasyAdminBundle\Config\Dashboard;
 use EasyCorp\Bundle\EasyAdminBundle\Config\MenuItem;
 use EasyCorp\Bundle\EasyAdminBundle\Controller\AbstractDashboardController;
@@ -17,7 +16,6 @@ use Symfony\Component\Routing\Attribute\Route;
 class DashboardController extends AbstractDashboardController
 {
     public function __construct(
-        private TransactionRepository $transactionRepository,
         private RequestRepository $requestRepository
     ) {}
 
@@ -25,7 +23,7 @@ class DashboardController extends AbstractDashboardController
     public function index(): Response
     {
         // Afficher un vrai dashboard au lieu d'une redirection
-        $pendingCount = $this->transactionRepository->countPending();
+        $pendingCount = $this->requestRepository->countPending();
 
         return $this->render('admin/dashboard.html.twig', [
             'pending_count' => $pendingCount,
@@ -46,8 +44,6 @@ class DashboardController extends AbstractDashboardController
         
         yield MenuItem::section('Validation');
         yield MenuItem::linkToCrud('Demandes à valider', 'fa fa-clock', Request::class)
-            ->setQueryParameter('filters[isValidated]', '0');
-        yield MenuItem::linkToCrud('Transactions à valider', 'fa fa-clock', Transaction::class)
             ->setQueryParameter('filters[isValidated]', '0');
         
         yield MenuItem::section('Gestion');

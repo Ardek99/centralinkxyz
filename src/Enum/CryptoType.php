@@ -23,5 +23,15 @@ enum CryptoType: string
     {
         return strtoupper($this->value);
     }
+
+    public function cryptoId(): string
+    {
+        return match ($this) {
+            self::BTC => 'bitcoin',
+            self::ETH => 'ethereum',
+            self::USDC => 'usd-coin',
+            self::USDT => 'tether'
+        };
+    }
 }
 

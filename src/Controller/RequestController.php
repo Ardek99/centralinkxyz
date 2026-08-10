@@ -17,6 +17,18 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[IsGranted('ROLE_USER')]
 final class RequestController extends AbstractController
 {
+    /**
+     * Petit widget autonome : affiché dans le menu de toutes les pages admin
+     * via {{ render(controller(...)) }}, indépendamment du contrôleur principal.
+     */
+    #[IsGranted('ROLE_ADMIN')]
+    public function pendingBadge(RequestRepository $requestRepository): Response
+    {
+        return $this->render('request/_pending_badge.html.twig', [
+            'pendingCount' => $requestRepository->countPending(),
+        ]);
+    }
+
     #[Route('', name: 'app_request_index', methods: ['GET'])]
     public function index(RequestRepository $requestRepository): Response
     {

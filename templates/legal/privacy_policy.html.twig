@@ -1,0 +1,110 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Politique de confidentialité — Centralink{% endblock %}
+
+{% block stylesheets %}
+<style>
+    .legal-wrapper {
+        padding: 3rem 0;
+    }
+
+    .legal-card {
+        background: var(--color-bg-secondary);
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-lg);
+        padding: 2.5rem;
+        max-width: 780px;
+        margin: 0 auto;
+    }
+
+    .legal-card h1 {
+        font-size: 1.75rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .legal-updated {
+        color: var(--color-text-muted);
+        font-size: 0.85rem;
+        margin-bottom: 2rem;
+    }
+
+    .legal-card h2 {
+        font-size: 1.15rem;
+        font-weight: 600;
+        margin: 2rem 0 0.75rem;
+    }
+
+    .legal-card p,
+    .legal-card li {
+        color: var(--color-text-muted);
+        line-height: 1.6;
+    }
+
+    .legal-card ul {
+        padding-left: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .legal-card strong {
+        color: var(--color-text);
+    }
+
+    .legal-card a {
+        color: var(--color-accent-light);
+    }
+</style>
+{% endblock %}
+
+{% block body %}
+<div class="legal-wrapper">
+    <div class="container">
+        <div class="legal-card">
+            <h1>Politique de confidentialité</h1>
+            <p class="legal-updated">Dernière mise à jour : {{ "now"|date("d/m/Y") }}</p>
+
+            <p>
+                Centralink attache de l'importance à la protection de vos données personnelles.
+                Cette page explique quelles données nous collectons, pourquoi, et les droits dont
+                vous disposez, conformément au Règlement Général sur la Protection des Données (RGPD).
+            </p>
+
+            <h2>Données collectées</h2>
+            <ul>
+                <li><strong>Données de compte</strong> : prénom, nom, adresse email, mot de passe (stocké sous forme hachée, jamais en clair).</li>
+                <li><strong>Données d'activité</strong> : vos demandes de dépôt/retrait et vos transactions (montants, cryptomonnaies, dates, statut de validation).</li>
+                <li><strong>Données techniques</strong> : adresse IP et horodatage des tentatives de connexion, à des fins de sécurité (protection contre le brute-force).</li>
+            </ul>
+
+            <h2>Pourquoi nous les collectons</h2>
+            <ul>
+                <li>Créer et sécuriser votre compte utilisateur.</li>
+                <li>Assurer le suivi et la validation de vos demandes et transactions.</li>
+                <li>Prévenir les usages frauduleux ou les tentatives d'accès non autorisées.</li>
+            </ul>
+
+            <h2>Durée de conservation</h2>
+            <p>
+                Vos données sont conservées tant que votre compte est actif. Vous pouvez à tout
+                moment demander la suppression définitive de votre compte et des données associées
+                (voir « Droit à l'effacement » ci-dessous).
+            </p>
+
+            <h2>Vos droits</h2>
+            <p>Conformément au RGPD, vous disposez des droits suivants sur vos données personnelles :</p>
+            <ul>
+                <li><strong>Droit d'accès</strong> : obtenir une copie des données que nous détenons sur vous.</li>
+                <li><strong>Droit de rectification</strong> : corriger des données inexactes ou incomplètes.</li>
+                <li><strong>Droit à l'effacement</strong> : demander la suppression de votre compte et de vos données. Vous pouvez le faire vous-même depuis votre espace personnel, via le bouton « Supprimer mon compte ».</li>
+                <li><strong>Droit d'opposition</strong> : vous opposer au traitement de vos données pour des motifs légitimes.</li>
+            </ul>
+
+            <h2>Nous contacter</h2>
+            <p>
+                Pour exercer l'un de ces droits ou pour toute question relative à vos données,
+                contactez-nous à <a href="mailto:centralinkxyz@protonmail.com">centralinkxyz@protonmail.com</a>.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

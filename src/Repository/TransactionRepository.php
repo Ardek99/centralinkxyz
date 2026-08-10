@@ -35,22 +35,6 @@ class TransactionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Trouve toutes les transactions EN ATTENTE d'un utilisateur
-     * 
-     * @return Transaction[]
-     */
-    public function findPendingByUser(User $user): array
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.user = :user')
-            ->andWhere('t.isValidated = false')
-            ->setParameter('user', $user)
-            ->orderBy('t.createdAt', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
      * Trouve toutes les transactions d'un utilisateur (validées et en attente)
      * 
      * @return Transaction[]
@@ -66,15 +50,17 @@ class TransactionRepository extends ServiceEntityRepository
     }
 
     /**
-     * Compte les transactions en attente de validation (pour l'admin)
+     * Trouve toutes les transactions VALIDÉES, tous clients confondus (pour l'admin)
+     *
+     * @return Transaction[]
      */
-    public function countPending(): int
+    public function findAllValidated(): array
     {
-        return (int) $this->createQueryBuilder('t')
-            ->select('COUNT(t.id)')
-            ->andWhere('t.isValidated = false')
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.isValidated = true')
+            ->orderBy('t.transactionDate', 'DESC')
             ->getQuery()
-            ->getSingleScalarResult();
+            ->getResult();
     }
 
     /**
@@ -107,22 +93,6 @@ class TransactionRepository extends ServiceEntityRepository
             ->andWhere('t.isValidated = true')
             ->andWhere('t.exitPrice IS NOT NULL')
             ->setParameter('user', $user)
-            ->orderBy('t.transactionDate', 'DESC')
-            ->getQuery()
-            ->getResult();
-    }
-
-    /**
-     * Trouve TOUTES les transactions VALIDÉES et CLÔTURÉES
-     * (pour afficher à tous les utilisateurs sur la home)
-     * 
-     * @return Transaction[]
-     */
-    public function findAllValidatedAndClosed(): array
-    {
-        return $this->createQueryBuilder('t')
-            ->andWhere('t.isValidated = true')
-            ->andWhere('t.exitPrice IS NOT NULL')
             ->orderBy('t.transactionDate', 'DESC')
             ->getQuery()
             ->getResult();

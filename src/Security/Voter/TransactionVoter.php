@@ -29,6 +29,11 @@ class TransactionVoter extends Voter
             return false;
         }
 
+        // Un admin gère les transactions de tous ses clients
+        if (in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return true;
+        }
+
         /** @var Transaction $transaction */
         $transaction = $subject;
 

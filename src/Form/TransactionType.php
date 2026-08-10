@@ -3,7 +3,10 @@
 namespace App\Form;
 
 use App\Entity\Transaction;
+use App\Entity\User;
 use App\Enum\CryptoType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
@@ -16,6 +19,13 @@ class TransactionType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
+            ->add('user', EntityType::class, [
+                'label' => 'Client',
+                'class' => User::class,
+                'choice_label' => 'fullName',
+                'placeholder' => 'Sélectionner un client',
+                'attr' => ['class' => 'form-select'],
+            ])
             ->add('cryptoType', ChoiceType::class, [
                 'label' => 'Crypto',
                 'choices' => array_combine(
@@ -25,13 +35,13 @@ class TransactionType extends AbstractType
                 'placeholder' => 'Sélectionner une crypto',
                 'attr' => ['class' => 'form-select'],
             ])
-            ->add('amount', NumberType::class, [
-                'label' => 'Montant',
-                'scale' => 8,
+            ->add('blockchainTxHash', TextType::class, [
+                'label' => 'Hash de transaction BTC (optionnel)',
+                'mapped' => false,
+                'required' => false,
                 'attr' => [
                     'class' => 'form-input',
-                    'placeholder' => 'Ex: 0.5',
-                    'step' => 'any',
+                    'placeholder' => 'Ex: a9a84ac2d662a3f9c3209cbce786167e05b686bc4c49457670f31c2ad4cd077f',
                 ],
             ])
             ->add('entryPrice', NumberType::class, [
@@ -40,6 +50,16 @@ class TransactionType extends AbstractType
                 'attr' => [
                     'class' => 'form-input',
                     'placeholder' => 'Ex: 42000.00',
+                    'step' => 'any',
+                ],
+            ])
+            ->add('usdAmount', NumberType::class, [
+                'label' => 'Montant investi ($)',
+                'mapped' => false,
+                'scale' => 2,
+                'attr' => [
+                    'class' => 'form-input',
+                    'placeholder' => 'Ex: 1000',
                     'step' => 'any',
                 ],
             ])

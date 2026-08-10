@@ -58,6 +58,7 @@
     }
 </style>
 
+{% set hasBlockchainLookup = false %}
 {% for field in form %}
     {% if field.vars.name != '_token' %}
         <div class="form-group">
@@ -67,10 +68,53 @@
                 <div class="form-error">{{ form_errors(field) }}</div>
             {% endif %}
         </div>
+
+        {% if field.vars.name == 'blockchainTxHash' %}
+            {% set hasBlockchainLookup = true %}
+            <button type="button" id="btn-lookup-blockchain" class="btn btn-secondary">
+                🔍 Récupérer depuis la blockchain
+            </button>
+        {% endif %}
     {% endif %}
 {% endfor %}
 
 {{ form_rest(form) }}
+
+{% if hasBlockchainLookup %}
+    <script>
+        document.getElementById('btn-lookup-blockchain').addEventListener('click', async () => {
+            const hash = document.getElementById('transaction_blockchainTxHash').value.trim();
+
+            if (!hash) {
+                alert('Merci de renseigner un hash de transaction.');
+                return;
+            }
+
+            try {
+                const response = await fetch(`/transactions/lookup-blockchain?hash=${encodeURIComponent(hash)}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    alert(data.error ?? 'Erreur inconnue');
+                    return;
+                }
+
+                // Remplir le montant investi (data.amount est en BTC, data.price en $/BTC)
+                document.getElementById('transaction_usdAmount').value = (data.amount * data.price).toFixed(2);
+
+                document.getElementById('transaction_entryPrice').value = data.price.toFixed(8);
+
+                // Remplir la date — format attendu par <input type="datetime-local"> : "YYYY-MM-DDTHH:mm"
+                const date = new Date(data.date);
+                const isoLocal = date.toISOString().slice(0, 16);
+                document.getElementById('transaction_transactionDate').value = isoLocal;
+
+            } catch (e) {
+                alert('Impossible de contacter le service blockchain.');
+            }
+        });
+    </script>
+{% endif %}
 
 
 

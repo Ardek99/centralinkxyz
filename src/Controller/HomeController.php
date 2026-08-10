@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Repository\RequestRepository;
 use App\Repository\TransactionRepository;
+use App\Service\FundsCalculator;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -13,7 +14,8 @@ final class HomeController extends AbstractController
 {
     public function __construct(
         private TransactionRepository $transactionRepository,
-        private RequestRepository $requestRepository
+        private RequestRepository $requestRepository,
+        private FundsCalculator $fundsCalculator,
     ) {}
 
     #[Route('/', name: 'app_home')]
@@ -33,31 +35,27 @@ final class HomeController extends AbstractController
         }
 
         // Pour les utilisateurs normaux : afficher l'historique
-        // Toutes les transactions validées ET clôturées (ajoutées par l'admin)
-        $closedTransactions = $this->transactionRepository->findAllValidatedAndClosed();
+        // Transactions validées ET clôturées de l'utilisateur connecté uniquement
+        $closedTransactions = $this->transactionRepository->findValidatedAndClosedByUser($user);
         // Seulement les requests de l'utilisateur connecté
         $validatedRequests = $this->requestRepository->findValidatedByUser($user);
         
         // Calcul des stats utilisateur
         $totalDeposits = 0.0;
-        $totalWithdrawals = 0.0;
         foreach ($validatedRequests as $request) {
-            $amount = (float) $request->getAmount();
             if ($request->getType()->value === 'deposit') {
-                $totalDeposits += $amount;
-            } else {
-                $totalWithdrawals += $amount;
+                $totalDeposits += (float) $request->getAmount();
             }
         }
 
-        // Calcul du P&L total de toutes les transactions (pour fonds disponibles)
+        // P&L des trades clôturés (pour affichage)
         $adminTotalPnl = 0.0;
         foreach ($closedTransactions as $transaction) {
             $adminTotalPnl += (float) $transaction->getProfitLoss();
         }
 
-        // Fonds disponibles = Total dépôt - Total Retrait + P&L total
-        $availableFunds = $totalDeposits - $totalWithdrawals + $adminTotalPnl;
+        // Fonds disponibles = dépôts - retraits + P&L clôturé - montant investi dans les positions ouvertes
+        $availableFunds = $this->fundsCalculator->getAvailableFunds($user);
 
         // Préparation des données pour le graphique P&L (P&L cumulatif de toutes les transactions)
         $pnlData = [];

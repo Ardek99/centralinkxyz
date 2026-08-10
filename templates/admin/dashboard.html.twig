@@ -15,11 +15,11 @@
                         <div class="card bg-warning text-dark mb-3">
                             <div class="card-body text-center">
                                 <h1 class="display-4">{{ pending_count }}</h1>
-                                <p class="mb-0">Transaction(s) en attente</p>
+                                <p class="mb-0">Demande(s) en attente</p>
                             </div>
                             <div class="card-footer">
-                                <a href="{{ ea_url().setController('App\\Controller\\Admin\\TransactionCrudController').setAction('index').set('filters[isValidated]', '0') }}" class="btn btn-dark btn-sm">
-                                    Voir les transactions à valider →
+                                <a href="{{ ea_url().setController('App\\Controller\\Admin\\RequestCrudController').setAction('index').set('filters[isValidated]', '0') }}" class="btn btn-dark btn-sm">
+                                    Voir les demandes à valider →
                                 </a>
                             </div>
                         </div>

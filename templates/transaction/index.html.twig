@@ -1,6 +1,6 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Mes Transactions — Centralink{% endblock %}
+{% block title %}Transactions clients — Centralink{% endblock %}
 
 {% block stylesheets %}
 <style>
@@ -272,79 +272,15 @@
 <div class="content-wrapper">
     <div class="container">
         <div class="page-header">
-            <h1 class="page-title">Mes Transactions</h1>
+            <h1 class="page-title">Transactions clients</h1>
             <a href="{{ path('app_transaction_new') }}" class="btn btn-primary">
                 Nouvelle transaction
             </a>
         </div>
 
-        {# Transactions en attente #}
-        {% if pendingTransactions|length > 0 %}
-            <div class="pending-notice">
-                Vous avez {{ pendingTransactions|length }} transaction(s) en attente de validation par un administrateur.
-            </div>
-
-            <div class="section-header">
-                <h2 class="section-title">En attente de validation</h2>
-                <span class="section-badge">{{ pendingTransactions|length }}</span>
-            </div>
-
-            <div class="table-container pending">
-                <table class="transactions-table">
-                    <thead>
-                        <tr>
-                            <th>Crypto</th>
-                            <th>Montant</th>
-                            <th>Entry Price</th>
-                            <th>Statut</th>
-                            <th class="hide-mobile">Créée le</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for transaction in pendingTransactions %}
-                            <tr>
-                                <td>
-                                    <span class="crypto-badge">
-                                        {{ transaction.cryptoType.symbol }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span style="font-family: var(--font-mono);">
-                                        {{ transaction.amount|number_format(4) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span style="font-family: var(--font-mono);">
-                                        ${{ transaction.entryPrice|number_format(2) }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span class="status-badge status-pending">En attente</span>
-                                </td>
-                                <td class="hide-mobile">
-                                    {{ transaction.createdAt|date('d/m/Y H:i') }}
-                                </td>
-                                <td>
-                                    <div class="actions">
-                                        <a href="{{ path('app_transaction_show', {id: transaction.id}) }}" class="btn-icon" title="Voir">
-                                            👁
-                                        </a>
-                                        <a href="{{ path('app_transaction_edit', {id: transaction.id}) }}" class="btn-icon" title="Modifier">
-                                            ✏️
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        {% endif %}
-
-        {# Stats (transactions validées) #}
-        <div class="section-header" style="margin-top: {{ pendingTransactions|length > 0 ? '3rem' : '0' }};">
-            <h2 class="section-title">Transactions validées</h2>
+        {# Stats #}
+        <div class="section-header" style="margin-top: 0;">
+            <h2 class="section-title">Transactions</h2>
         </div>
 
         <div class="stats-grid">
@@ -387,6 +323,7 @@
                 <table class="transactions-table">
                     <thead>
                         <tr>
+                            <th>Client</th>
                             <th>Crypto</th>
                             <th>Montant</th>
                             <th>Entry Price</th>
@@ -400,6 +337,7 @@
                     <tbody>
                         {% for transaction in transactions %}
                             <tr>
+                                <td>{{ transaction.user.fullName }}</td>
                                 <td>
                                     <span class="crypto-badge">
                                         {{ transaction.cryptoType.symbol }}
@@ -467,7 +405,7 @@
                 <div class="empty-state">
                     <div class="empty-state-icon">📭</div>
                     <h3>Aucune transaction validée</h3>
-                    <p>Vos transactions apparaîtront ici après validation par un administrateur.</p>
+                    <p>Les transactions de vos clients apparaîtront ici une fois validées.</p>
                     <a href="{{ path('app_transaction_new') }}" class="btn btn-primary" style="margin-top: 1rem;">
                         ➕ Nouvelle transaction
                     </a>
