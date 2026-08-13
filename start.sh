@@ -78,12 +78,30 @@ elif [ -f "/bin/caddy" ]; then
     CADDY_PATH="/bin/caddy"
 fi
 
+# Même chose pour frankenphp : sur une image Nixpacks, le $PATH au runtime
+# peut ne pas inclure /usr/local/bin même si le binaire y a été téléchargé
+# pendant le build, donc on vérifie aussi les chemins absolus.
+FRANKENPHP_PATH=""
+if command -v frankenphp &> /dev/null; then
+    FRANKENPHP_PATH="frankenphp"
+elif [ -f "/usr/local/bin/frankenphp" ]; then
+    FRANKENPHP_PATH="/usr/local/bin/frankenphp"
+elif [ -f "/usr/bin/frankenphp" ]; then
+    FRANKENPHP_PATH="/usr/bin/frankenphp"
+elif [ -f "/bin/frankenphp" ]; then
+    FRANKENPHP_PATH="/bin/frankenphp"
+fi
+
+echo "Debug: PATH=$PATH"
+echo "Debug: ls -la /usr/local/bin/ (frankenphp/caddy expected here if download succeeded):"
+ls -la /usr/local/bin/ 2>&1 || echo "  /usr/local/bin does not exist or is not listable"
+
 if [ -n "$CADDY_PATH" ]; then
     echo "Starting FrankenPHP server with $CADDY_PATH..."
     exec $CADDY_PATH run --config ./Caddyfile
-elif command -v frankenphp &> /dev/null; then
-    echo "Starting FrankenPHP server with frankenphp..."
-    exec frankenphp
+elif [ -n "$FRANKENPHP_PATH" ]; then
+    echo "Starting FrankenPHP server with $FRANKENPHP_PATH..."
+    exec $FRANKENPHP_PATH run --config ./Caddyfile
 else
     echo "WARNING: Cannot find caddy or frankenphp."
     echo "Using PHP built-in server as fallback..."

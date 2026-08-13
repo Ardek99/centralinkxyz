@@ -5,7 +5,18 @@
 
 :{$PORT:8000} {
     root * public
-    
+
+    # Headers de sécurité de base (pas de CSP stricte : plusieurs templates
+    # utilisent encore du <style>/<script> inline, une CSP sans unsafe-inline
+    # casserait le rendu).
+    header {
+        X-Content-Type-Options nosniff
+        X-Frame-Options DENY
+        Referrer-Policy strict-origin-when-cross-origin
+        Strict-Transport-Security "max-age=31536000; includeSubDomains"
+        -Server
+    }
+
     # Servir les fichiers statiques (assets, bundles, etc.)
     @static {
         path /bundles/*
