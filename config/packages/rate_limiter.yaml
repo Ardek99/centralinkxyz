@@ -1,0 +1,22 @@
+framework:
+    rate_limiter:
+        registration:
+            policy: 'fixed_window'
+            limit: 5
+            interval: '15 minutes'
+
+when@test:
+    framework:
+        cache:
+            pools:
+                # Stockage en mémoire pour les tests : sinon le quota persiste
+                # sur disque entre deux lancements de la suite et fausse les
+                # assertions (déjà épuisé par un run précédent).
+                cache.rate_limiter.test:
+                    adapter: cache.adapter.array
+        rate_limiter:
+            registration:
+                policy: 'fixed_window'
+                limit: 5
+                interval: '15 minutes'
+                cache_pool: 'cache.rate_limiter.test'
