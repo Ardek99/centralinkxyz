@@ -6,9 +6,11 @@ use App\Entity\User;
 use App\Form\RegistrationFormType;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Symfony\Component\RateLimiter\RateLimiterFactory;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
 
@@ -38,7 +40,8 @@ class SecurityController extends AbstractController
     public function register(
         Request $request,
         UserPasswordHasherInterface $userPasswordHasher,
-        EntityManagerInterface $entityManager
+        EntityManagerInterface $entityManager,
+        #[Autowire(service: 'limiter.registration')] RateLimiterFactory $registrationLimiter
     ): Response {
         // Rediriger si déjà connecté
         if ($this->getUser()) {
@@ -48,6 +51,14 @@ class SecurityController extends AbstractController
         $user = new User();
         $form = $this->createForm(RegistrationFormType::class, $user);
         $form->handleRequest($request);
+
+        if ($form->isSubmitted() && !$registrationLimiter->create($request->getClientIp())->consume(1)->isAccepted()) {
+            $this->addFlash('error', 'Trop de tentatives d\'inscription. Réessayez dans quelques minutes.');
+
+            return $this->render('security/register.html.twig', [
+                'registrationForm' => $form,
+            ]);
+        }
 
         if ($form->isSubmitted() && $form->isValid()) {
             // Hash le mot de passe
