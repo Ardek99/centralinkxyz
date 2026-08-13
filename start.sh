@@ -83,7 +83,7 @@ if [ -n "$CADDY_PATH" ]; then
     exec $CADDY_PATH run --config ./Caddyfile
 elif command -v frankenphp &> /dev/null; then
     echo "Starting FrankenPHP server with frankenphp..."
-    exec frankenphp
+    exec frankenphp run --config ./Caddyfile
 else
     echo "WARNING: Cannot find caddy or frankenphp."
     echo "Using PHP built-in server as fallback..."

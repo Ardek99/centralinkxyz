@@ -4,7 +4,11 @@
     COMPOSER_ALLOW_SUPERUSER = "1"
 
 [phases.setup]
-    nixPkgs = ["...", "php83Extensions.intl", "php83Extensions.pdo_pgsql"]
+    nixPkgs = ["...", "php83Extensions.intl", "php83Extensions.pdo_pgsql", "curl"]
+    cmds = [
+        "curl -fsSL -o /usr/local/bin/frankenphp https://github.com/php/frankenphp/releases/download/v1.12.7/frankenphp-linux-x86_64-gnu",
+        "chmod +x /usr/local/bin/frankenphp"
+    ]
 
 [phases.install]
     cmds = [
