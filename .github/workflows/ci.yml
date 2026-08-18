@@ -1,0 +1,72 @@
+name: CI
+
+on:
+  push:
+    branches: [main, staging]
+  pull_request:
+    branches: [main, staging]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: app
+          POSTGRES_PASSWORD: app
+          POSTGRES_DB: centralink_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U app -d centralink_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.4'
+          extensions: intl, pdo_pgsql, pgsql, zip, opcache
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer packages
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('**/composer.lock') }}
+          restore-keys: ${{ runner.os }}-composer-
+
+      - name: Install dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
+      - name: Configure test database connection
+        run: echo 'DATABASE_URL="postgresql://app:app@127.0.0.1:5432/centralink?serverVersion=16&charset=utf8"' > .env.test.local
+
+      - name: Run database migrations
+        run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
+
+      - name: Install importmap vendor assets
+        run: php bin/console importmap:install
+
+      - name: Lint Twig templates
+        run: php bin/console lint:twig templates
+
+      - name: Lint YAML configuration
+        run: php bin/console lint:yaml config --parse-tags
+
+      - name: Run test suite
+        run: php bin/phpunit
+
+      - name: Security audit
+        run: composer audit
