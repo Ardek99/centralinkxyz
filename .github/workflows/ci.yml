@@ -56,6 +56,9 @@ jobs:
       - name: Run database migrations
         run: php bin/console doctrine:migrations:migrate --no-interaction --env=test
 
+      - name: Install importmap vendor assets
+        run: php bin/console importmap:install
+
       - name: Lint Twig templates
         run: php bin/console lint:twig templates
 
